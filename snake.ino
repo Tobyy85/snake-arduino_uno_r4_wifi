@@ -1,36 +1,37 @@
 #include <Arduino_LED_Matrix.h>
 
 #include "JoyStick.h"
-#include "number_array.h"
+#include "number_array.h" // In this file is function to get the bitmap of a number
 #include "clear_screen.h"
 
 ArduinoLEDMatrix matrix;
 
 // 507 and 509 are values for the joystick in normal position
 // 5 and 5 are the deadzone precent (to ignore small movements of the joystick)
-// you can change the SW pin to digital pin
+// You can change the SW pin to digital pin
 JoyStick joy_stick(A0, A1, A2, 509, 507, 5, 5);
 
 
 const int screen_width = 12;
 const int screen_height = 8;
 
+bool show_menu = true;
 bool playing = false;
 bool show_end_screen = false;
-bool show_menu = true;
 
-float difficulty = 5;//1-9
-float multiplier;//0.02*difficulty + 1
+float difficulty = 5; // 1-9
+float multiplier; // 0.02*difficulty + 1
 float speed = 3;
-float delay_time = 1000/speed;//ms
+float delay_time = 1000/speed; // ms
 
 
 struct coordinates{
   int x;
   int y;
 };
+
 int snake_length = 1;
-coordinates snake[96]; //max length of snake is 96 (8*12)
+coordinates snake[96]; // Max length of snake is 96 (8*12)
 coordinates food;
 
 String joy_stick_pos = ""; // "UP", "RIGHT", "DOWN", "LEFT", "CENTER"
@@ -42,62 +43,73 @@ void setup() {
   Serial.begin(9600);
   matrix.begin();
 
-  randomSeed(analogRead(A4) + analogRead(A5));//seed for random food position (I am using 2 analog pins to get a more random seed)
+  randomSeed(analogRead(A4) + analogRead(A5)); // Seed for random food position (I am using 2 analog pins to get a more random seed)
 
-  generate_food(); //generate the first food
-  snake[0].x = screen_width/2; // start position of the snake is in the middle of the screen
-  snake[0].y = screen_height/2; // start position of the snake is in the middle of the screen
+  generate_food(); // Generate the first food
+  snake[0].x = screen_width/2; // Start position of the snake is in the middle of the screen
+  snake[0].y = screen_height/2; // Start position of the snake is in the middle of the screen
 
 }
 
 void loop() {
+  // Here you can call print function to print the values
   // print();
   
+  // If the stage of the game is playing (main)
   if (playing){
-    delay_time = 1000/speed;
+    delay_time = 1000/speed;  // Update the delay time
     
-    for (int _ = 0; _ < 10; _++){
+    for (int _ = 0; _ < 10; _++){ // If this loop wasn't here, the joystick would be checked only once every delay time
       get_direction();
       delay(delay_time/10);
     }
-    last_direction = direction;
+    last_direction = direction;  // To prevent the snake from going back on itself
 
-    move();
-    check_for_collisions();
+    move(); // Move the snake
+    check_for_collisions(); // Check for collisions
+
+    // If the game is still playing, render the snake and the food on the screen
     if (!show_end_screen){
-      render_on_screen();
+      render_on_screen(); // Render the snake and the food on the screen
     }
   
+   // If the stage of the game is menu
   }else if (show_menu){
-
-    
+    // If the joystick is in the left the difficulty will decrease
     if (difficulty > 1 && joy_stick.get_x_direction() == "LEFT"){
       difficulty--;
-      delay(150);
+      delay(150); // To prevent the difficulty from changing too fast
+    // If the joystick is in the right the difficulty will increase
     }else if (difficulty < 9 && joy_stick.get_x_direction() == "RIGHT"){
       difficulty++;
-      delay(150);
+      delay(150); // To prevent the difficulty from changing too fast
     }
 
+    // If the joystick is pressed, the game will start
     if (joy_stick.get_SW()){
-      multiplier = float(0.02*difficulty) + 1;
-      speed *= multiplier;
-      playing = true;
-      show_menu = false;
+      multiplier = float(0.02*difficulty) + 1; // The multiplier is used to increase the speed of the snake based on the difficulty
+      speed *= multiplier; // Increase the speed of the snake
+      playing = true; // The game is now playing
+      show_menu = false; // The menu is now hidden
     }
 
+    // Render the difficulty on the screen
     number_on_matrix(difficulty);
   
-
-
+  // If the stage of the game is end screen
   }else if (show_end_screen){
-    delay(250);
-    end_screen();
+    int score = snake_length - 1; // calculate the score
+    number_on_matrix(score); // Render the score on the screen
+    delay(200); // Delay to do blink effect
+    matrix.renderBitmap(clear_screen, 8, 12); // Render the clear screen
+    delay(200); // Delay to do blink effect
+
+    // If the joystick is pressed, the game will reset
+    if (joy_stick.get_SW()){
+      reset_variables(); // Reset the variables to start the game again
+    }
   }
     
-  
-  
-  
 }
 
 void get_direction(){
@@ -245,17 +257,6 @@ void number_on_matrix(int number){
   }
 
   matrix.renderBitmap(copy, 8, 12);
-}
-
-
-void end_screen(){
-  int score = snake_length - 1;
-  number_on_matrix(score);
-  delay(250);
-  matrix.renderBitmap(clear_screen, 8, 12);
-  if (joy_stick.get_SW()){
-    reset_variables();
-  }
 }
 
 
