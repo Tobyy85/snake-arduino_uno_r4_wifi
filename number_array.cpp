@@ -23,7 +23,12 @@ byte screen[8][12] = {
 { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 };
 
-// Define a function that takes an integer as input and displays the number on the screen
+
+/**
+ * Displays a single number on the screen.
+ *
+ * @param num The number to be displayed.
+ */
 void display_1_num(int num) {
     int width = 5;
     int d_width = 12;
@@ -42,7 +47,13 @@ void display_1_num(int num) {
     }
   }
 
-// Define a function that takes two integers as input and displays the numbers on the screen
+
+/**
+ * Displays two numbers on the screen.
+ *
+ * @param l_num The left number to be displayed.
+ * @param r_num The right number to be displayed.
+ */
 void display_2_nums(int l_num, int r_num) {
     int screen_x, screen_y;
 
@@ -71,7 +82,13 @@ void display_2_nums(int l_num, int r_num) {
     }
   }
 
-// Define a function that takes an integer as input and returns a pointer to a 2D array of bytes
+
+/**
+ * Retrieves a pointer to a 2D array representing the binary representation of a given number.
+ *
+ * @param number The number for which to retrieve the binary representation.
+ * @return A pointer to a 2D array representing the binary representation of the given number.
+ */
 byte (*get_number(int number))[8][12] {
   for (int y = 0; y < 8; y++) {
     for (int x = 0; x < 12; x++) {

@@ -34,9 +34,9 @@ int snake_length = 1;
 coordinates snake[96]; // Max length of snake is 96 (8*12)
 coordinates food;
 
-String joy_stick_pos = ""; // "UP", "RIGHT", "DOWN", "LEFT", "CENTER"
-String direction = ""; // "UP", "RIGHT", "DOWN", "LEFT"
-String last_direction = ""; // "UP", "RIGHT", "DOWN", "LEFT"
+String joy_stick_pos = ""; // in which direction the joystick is pointing ("UP", "RIGHT", "DOWN", "LEFT", "CENTER")
+String direction = ""; // in which direction the snake is moving ("UP", "RIGHT", "DOWN", "LEFT")
+String last_direction = ""; // in which direction the snake was moving last ("UP", "RIGHT", "DOWN", "LEFT")
 
 
 void setup() {
@@ -113,30 +113,28 @@ void loop() {
 }
 
 void get_direction(){
-  joy_stick_pos = joy_stick.get_direction();
-  if (joy_stick_pos != "CENTER"){
-    if (joy_stick_pos == "UP" && direction != "DOWN" && last_direction != "DOWN"){
+  joy_stick_pos = joy_stick.get_direction(); // Get the direction of the joystick
+  if (joy_stick_pos != "CENTER"){ // If the joystick is not in the center
+    if (joy_stick_pos == "UP" && last_direction != "DOWN"){ // If the joystick is pointing up and the snake wasn't moving down
       direction = "UP";
-    }else if (joy_stick_pos == "RIGHT" && direction != "LEFT" && last_direction != "LEFT"){
+    }else if (joy_stick_pos == "RIGHT" && last_direction != "LEFT"){ // If the joystick is pointing right and the snake wasn't moving left
       direction = "RIGHT";
-    }else if (joy_stick_pos == "DOWN" && direction != "UP" && last_direction != "UP"){
+    }else if (joy_stick_pos == "DOWN" && last_direction != "UP"){ // If the joystick is pointing down and the snake wasn't moving up
       direction = "DOWN";
-    }else if (joy_stick_pos == "LEFT" && direction != "RIGHT" && last_direction != "RIGHT"){
+    }else if (joy_stick_pos == "LEFT" && last_direction != "RIGHT"){ // If the joystick is pointing left and the snake wasn't moving right
       direction = "LEFT";
     }
-  }
-  
+  } 
 }
 
 void move(){
-  
-  //move the body of the snake
+  // Move the body of the snake
   for (int i = snake_length; i > 0; i--){
     snake[i].x = snake[i-1].x;
     snake[i].y = snake[i-1].y;
   }
 
-  //move the head of the snake
+  // Move the head of the snake
   if (direction == "UP"){
     snake[0].y -= 1;
   }else if (direction == "RIGHT"){
@@ -146,28 +144,59 @@ void move(){
   }else if (direction == "LEFT"){
     snake[0].x -= 1;
   }
-
-
 }
 
-void generate_food(){
-  
-  food.x = random(0, screen_width);
-  food.y = random(0, screen_height);
 
-  //check if food is not on snake
-  for (int i = 0; i < snake_length; i++){
-    if (food.x == snake[i].x && food.y == snake[i].y){
-      generate_food();
-      return;
+
+void check_for_collisions(){
+  // If the snake collides with the food
+  if (snake[0].x == food.x && snake[0].y == food.y){
+    snake_length++; // Increase the length of the snake
+    speed *= float(multiplier); // Increase the speed of the snake
+    generate_food(); // Generate a new food
+  }
+
+  // If the snake collides with itself
+  for (int i = 1; i < snake_length; i++){
+    if (snake[0].x == snake[i].x && snake[0].y == snake[i].y){ // If the head of the snake collides with the body of the snake
+      playing = false;
+      show_end_screen = true;
     }
   }
 
-  
-
+  // If the snake is out of the screen
+  if (snake[0].x > screen_width-1){
+    playing = false;
+    show_end_screen = true;
+  }else if (snake[0].x < 0){
+    playing = false;
+    show_end_screen = true;
+  }else if (snake[0].y < 0){
+    playing = false;
+    show_end_screen = true;
+  }else if (snake[0].y > screen_height-1){
+    playing = false;
+    show_end_screen = true;
+  }
 }
 
+// Generate a new food
+void generate_food(){
+  food.x = random(0, screen_width); // Generate a random x position for the food
+  food.y = random(0, screen_height); // Generate a random y position for the food
+
+  // To avoid the food to be generated on the snake
+  for (int i = 0; i < snake_length; i++){
+    // If the food is generated on the snake, generate a new food
+    if (food.x == snake[i].x && food.y == snake[i].y){
+      generate_food();
+    }
+  }
+}
+
+// Render the snake and the food on the screen
 void render_on_screen(){
+  // Create clear screen
   byte on_screen[8][12] = {
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -178,19 +207,30 @@ void render_on_screen(){
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
   };
-
+  // Render each part of the snake
   for (int i = 0; i < snake_length; i++){
     on_screen[snake[i].y][snake[i].x] = 1;
   }
-  on_screen[food.y][food.x] = 1;
-
-  
-  matrix.renderBitmap(on_screen, 8, 12);
-
+  on_screen[food.y][food.x] = 1; // Render the food
+  matrix.renderBitmap(on_screen, 8, 12); // Render the bitmap on the screen
 }
 
-void print(){
+// This function is here because the get_number function is returning a pointer to a 2D array
+void number_on_matrix(int number){
+  byte (*p)[8][12] = get_number(number); // Get the pointer to the bitmap of the number
 
+  // Create a copy of the bitmap
+  byte copy[8][12];
+  for (int i = 0; i < 8; ++i) {
+    for (int j = 0; j < 12; ++j) {
+      copy[i][j] = (*p)[i][j];
+    }
+  }
+  matrix.renderBitmap(copy, 8, 12); // Render the bitmap on the screen
+}
+
+// Print the values to the serial monitor
+void print(){
   if (playing){
     Serial.println("");
     Serial.print("direction: ");
@@ -208,66 +248,14 @@ void print(){
   }
 }
 
-
-void check_for_collisions(){
-  //food collision
-  if (snake[0].x == food.x && snake[0].y == food.y){
-    snake_length++;
-    speed *= float(multiplier);
-    generate_food();
-  }
-
-  //collision with self
-  for (int i = 1; i < snake_length; i++){
-    if (snake[0].x == snake[i].x && snake[0].y == snake[i].y){
-      playing = false;
-      show_end_screen = true;
-    }
-  }
-
-
-  //if snake is out of screen
-  if (snake[0].x > screen_width-1){
-    playing = false;
-    show_end_screen = true;
-  }else if (snake[0].x < 0){
-    playing = false;
-    show_end_screen = true;
-  }else if (snake[0].y < 0){
-    playing = false;
-    show_end_screen = true;
-  }else if (snake[0].y > screen_height-1){
-    playing = false;
-    show_end_screen = true;
-  }
-
-
-}
-
-void number_on_matrix(int number){
-  // Get the bitmap for the number
-  byte (*p)[8][12] = get_number(number);
-
-  // Create a copy of the bitmap
-  byte copy[8][12];
-  for (int i = 0; i < 8; ++i) {
-    for (int j = 0; j < 12; ++j) {
-      copy[i][j] = (*p)[i][j];
-    }
-  }
-
-  matrix.renderBitmap(copy, 8, 12);
-}
-
-
+// Reset the variables to start the game again
 void reset_variables(){
-  randomSeed(analogRead(A4) + analogRead(A5));
-  Serial.print("seed: ");
-  Serial.println(analogRead(A4) + analogRead(A5));
+  randomSeed(analogRead(A4) + analogRead(A5)); // Seed for random food position (I am using 2 analog pins to get a more random seed)
   playing = false;
   show_end_screen = false;
   show_menu = true;
   speed = 3;
+  // Reset the snake
   for (int i = 0; i < snake_length; i++){
     snake[i].x = 0;
     snake[i].y = 0;
@@ -279,7 +267,5 @@ void reset_variables(){
   joy_stick_pos = "";
   generate_food();
   matrix.renderBitmap(clear_screen, 8, 12);
-  delay(500);  
+  delay(250);  
 }
-
-
