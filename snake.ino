@@ -24,6 +24,10 @@ float multiplier; // 0.02*difficulty + 1
 float speed = 3;
 float delay_time = 1000/speed; // ms
 
+float current_millis = 0;
+float last_millis_end_screen = 0;
+float blink_delay = 400;
+
 
 struct coordinates{
   int x;
@@ -98,15 +102,22 @@ void loop() {
   
   // If the stage of the game is end screen
   }else if (show_end_screen){
+    current_millis = millis();
     int score = snake_length - 1; // calculate the score
-    number_on_matrix(score); // Render the score on the screen
-    delay(200); // Delay to do blink effect
-    matrix.renderBitmap(clear_screen, 8, 12); // Render the clear screen
-    delay(200); // Delay to do blink effect
+
+    if (current_millis - last_millis_end_screen >= blink_delay){
+      matrix.renderBitmap(clear_screen, 8, 12); // Render the clear screen
+      if (current_millis - last_millis_end_screen >= blink_delay*2){
+        number_on_matrix(score); // Render the score on the screen
+        last_millis_end_screen = current_millis;
+      }
+    }
+    
 
     // If the joystick is pressed, the game will reset
     if (joy_stick.get_SW()){
       reset_variables(); // Reset the variables to start the game again
+      delay(100);
     }
   }
     
