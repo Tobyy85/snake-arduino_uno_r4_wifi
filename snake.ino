@@ -67,16 +67,16 @@ void loop() {
     for (int _ = 0; _ < 10; _++){ // If this loop wasn't here, the joystick would be checked only once every delay time
       get_direction();
       delay(delay_time/10);
+      // If the game is still playing, render the snake and the food on the screen
+      if (!show_end_screen){
+        render_on_screen(); // Render the snake and the food on the screen
+      }
     }
     last_direction = direction;  // To prevent the snake from going back on itself
 
     move(); // Move the snake
     check_for_collisions(); // Check for collisions
 
-    // If the game is still playing, render the snake and the food on the screen
-    if (!show_end_screen){
-      render_on_screen(); // Render the snake and the food on the screen
-    }
   
    // If the stage of the game is menu
   }else if (show_menu){
@@ -224,9 +224,9 @@ void render_on_screen(){
     on_screen[snake[i].y][snake[i].x] = 1;
   }
   current_millis = millis();
-  if (current_millis - last_millis_food >= 1000/speed){
+  if (current_millis - last_millis_food >= blink_delay/4){
     on_screen[food.y][food.x] = 1;
-    if (current_millis - last_millis_food >= 2000/speed){
+    if (current_millis - last_millis_food >= blink_delay){
       on_screen[food.y][food.x] = 0;
       last_millis_food = current_millis;
     }
