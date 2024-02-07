@@ -26,6 +26,7 @@ float delay_time = 1000/speed; // ms
 
 float current_millis = 0;
 float last_millis_end_screen = 0;
+float last_millis_food = 0;
 float blink_delay = 400;
 
 
@@ -117,7 +118,7 @@ void loop() {
     // If the joystick is pressed, the game will reset
     if (joy_stick.get_SW()){
       reset_variables(); // Reset the variables to start the game again
-      delay(100);
+      delay(100); 
     }
   }
     
@@ -222,7 +223,14 @@ void render_on_screen(){
   for (int i = 0; i < snake_length; i++){
     on_screen[snake[i].y][snake[i].x] = 1;
   }
-  on_screen[food.y][food.x] = 1; // Render the food
+  current_millis = millis();
+  if (current_millis - last_millis_food >= 1000/speed){
+    on_screen[food.y][food.x] = 1;
+    if (current_millis - last_millis_food >= 2000/speed){
+      on_screen[food.y][food.x] = 0;
+      last_millis_food = current_millis;
+    }
+  }
   matrix.renderBitmap(on_screen, 8, 12); // Render the bitmap on the screen
 }
 

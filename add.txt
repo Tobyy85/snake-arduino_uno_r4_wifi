@@ -1,0 +1,3 @@
+    replace delay with millis in end screen (for the blinking effect)
+blinking food (using millis)
+AI which will play the game
