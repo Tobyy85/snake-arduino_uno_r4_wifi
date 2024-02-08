@@ -1,10 +1,13 @@
-#include <Arduino_LED_Matrix.h>
+// #include <Arduino_LED_Matrix.h>
 
 #include "JoyStick.h"
 #include "number_array.h" // In this file is function to get the bitmap of a number
 #include "clear_screen.h"
 
+#include "simple_ai.h"
+
 ArduinoLEDMatrix matrix;
+SimpleAI simple_ai(3, 10);
 
 // 507 and 509 are values for the joystick in normal position
 // 5 and 5 are the deadzone precent (to ignore small movements of the joystick)
@@ -15,6 +18,7 @@ JoyStick joy_stick(A0, A1, A2, 509, 507, 5, 5);
 const int screen_width = 12;
 const int screen_height = 8;
 
+bool ai = true;
 bool show_menu = true;
 bool playing = false;
 bool show_end_screen = false;
@@ -47,12 +51,17 @@ String last_direction = ""; // in which direction the snake was moving last ("UP
 void setup() {
   Serial.begin(9600);
   matrix.begin();
-
   randomSeed(analogRead(A4) + analogRead(A5)); // Seed for random food position (I am using 2 analog pins to get a more random seed)
 
   generate_food(); // Generate the first food
   snake[0].x = screen_width/2; // Start position of the snake is in the middle of the screen
   snake[0].y = screen_height/2; // Start position of the snake is in the middle of the screen
+
+  if (ai){
+    playing = false;
+    show_end_screen = false;
+    show_menu = false;
+  }
 
 }
 
@@ -81,11 +90,11 @@ void loop() {
    // If the stage of the game is menu
   }else if (show_menu){
     // If the joystick is in the left the difficulty will decrease
-    if (difficulty > 1 && joy_stick.get_x_direction() == "LEFT"){
+    if (difficulty > 0 && joy_stick.get_x_direction() == "LEFT"){
       difficulty--;
       delay(150); // To prevent the difficulty from changing too fast
     // If the joystick is in the right the difficulty will increase
-    }else if (difficulty < 9 && joy_stick.get_x_direction() == "RIGHT"){
+    }else if (difficulty < 10 && joy_stick.get_x_direction() == "RIGHT"){
       difficulty++;
       delay(150); // To prevent the difficulty from changing too fast
     }
@@ -120,8 +129,19 @@ void loop() {
       reset_variables(); // Reset the variables to start the game again
       delay(100); 
     }
+  }else if (ai){
+    if (simple_ai._playing){
+      simple_ai.move();
+      simple_ai.check_for_collisions();
+      simple_ai.render_on_screen();
+      delay(1000/simple_ai._speed);
+    }else{
+      delay(250);
+      number_on_matrix(simple_ai.get_score());
+      delay(750);
+      simple_ai.reset_variables();
+    }
   }
-    
 }
 
 void get_direction(){
