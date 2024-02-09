@@ -16,7 +16,7 @@ class SimpleAI{
         int get_score();
 
 
-        int _speed;
+        float _speed;
         bool _playing;
 
 
