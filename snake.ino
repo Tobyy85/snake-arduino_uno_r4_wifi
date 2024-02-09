@@ -131,14 +131,16 @@ void loop() {
     }
   }else if (ai){
     if (simple_ai._playing){
+      delay(1000/simple_ai._speed);
       simple_ai.move();
       simple_ai.check_for_collisions();
-      simple_ai.render_on_screen();
-      delay(1000/simple_ai._speed);
+      if (simple_ai._playing){
+        simple_ai.render_on_screen();
+      }
     }else{
       delay(250);
       number_on_matrix(simple_ai.get_score());
-      delay(750);
+      delay(100*simple_ai.get_score());
       simple_ai.reset_variables();
     }
   }

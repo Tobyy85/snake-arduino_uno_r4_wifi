@@ -112,34 +112,106 @@ int SimpleAI::get_score(){
 
 
 void SimpleAI::get_direction(){
-    // The snake go to the food coordinates
-    // It will calculate which axis is closer to the food and go to that axis first
-    int distance_x = abs(_snake[0].x - _food.x);
-    int distance_y = abs(_snake[0].y - _food.y);
-    if (distance_x < distance_y && _snake[0].x != _food.x){
-        if (_snake[0].x < _food.x && _direction != "left"){
-            _direction = "right";
-        }else if (_snake[0].x > _food.x && _direction != "right"){
-            _direction = "left";
-        }
-    
-    }else if (_snake[0].y != _food.y){
-        if (_snake[0].y < _food.y && _direction != "up"){
-            _direction = "down";
-        }else if (_snake[0].y > _food.y && _direction != "down"){
+    if (_direction == "up"){
+        if (_food.y < _snake[0].y){
             _direction = "up";
+        }else{
+            if (_food.x < _snake[0].x){
+                _direction = "left";
+            }else if (_food.x > _snake[0].x){
+                _direction = "right";
+            }else{
+                // I need to get how close is from left and right wall
+                int from_left = _snake[0].x;
+                int from_right = _screen_width-1 - _snake[0].x;
+                if (from_left > from_right){
+                    _direction = "left";
+                }else if (from_left < from_right){
+                    _direction = "right";
+                }else{
+                    _direction = random(0, 2) == 0 ? "left" : "right";
+                }
+            }
+        }
+    }else if (_direction == "down"){
+        if (_food.y > _snake[0].y){
+            _direction = "down";
+        }else{
+            if (_food.x < _snake[0].x){
+                _direction = "left";
+            }else if (_food.x > _snake[0].x){
+                _direction = "right";
+            }else{
+                // I need to get how close is from left and right wall
+                int from_left = _snake[0].x;
+                int from_right = _screen_width-1 - _snake[0].x;
+                if (from_left > from_right){
+                    _direction = "left";
+                }else if (from_left < from_right){
+                    _direction = "right";
+                }else{
+                    _direction = random(0, 2) == 0 ? "left" : "right";
+                }
+            }
+        }
+    }else if (_direction == "left"){
+        if (_food.x < _snake[0].x){
+            _direction = "left";
+        }else{
+            if (_food.y < _snake[0].y){
+                _direction = "up";
+            }else if (_food.y > _snake[0].y){
+                _direction = "down";
+            }else{
+                // I need to get how close is from up and down wall
+                int from_up = _snake[0].y;
+                int from_down = _screen_height-1 - _snake[0].y;
+                if (from_up > from_down){
+                    _direction = "up";
+                }else if (from_up < from_down){
+                    _direction = "down";
+                }else{
+                    _direction = random(0, 2) == 0 ? "up" : "down";
+                }
+            }
+        }
+    }else if (_direction == "right"){
+        if (_food.x > _snake[0].x){
+            _direction = "right";
+        }else{
+            if (_food.y < _snake[0].y){
+                _direction = "up";
+            }else if (_food.y > _snake[0].y){
+                _direction = "down";
+            }else{
+                // I need to get how close is from up and down wall
+                int from_up = _snake[0].y;
+                int from_down = _screen_height-1 - _snake[0].y;
+                if (from_up > from_down){
+                    _direction = "up";
+                }else if (from_up < from_down){
+                    _direction = "down";
+                }else{
+                    _direction = random(0, 2) == 0 ? "up" : "down";
+                }
+            }
         }
     }else{
-        if (_snake[0].x < _food.x && _direction != "left"){
-            _direction = "right";
-        }else if (_snake[0].x > _food.x && _direction != "right"){
-            _direction = "left";
-        }else if (_snake[0].y < _food.y && _direction != "up"){
-            _direction = "down";
-        }else if (_snake[0].y > _food.y && _direction != "down"){
-            _direction = "up";
+        int x_difference = abs(_food.x - _snake[0].x);
+        int y_difference = abs(_food.y - _snake[0].y);
+        if (x_difference > y_difference && x_difference != 0){
+            if (_food.x < _snake[0].x){
+                _direction = "left";
+            }else if (_food.x > _snake[0].x){
+                _direction = "right";
+            }
+        }else if (y_difference > x_difference && y_difference != 0){
+            if (_food.y < _snake[0].y){
+                _direction = "up";
+            }else if (_food.y > _snake[0].y){
+                _direction = "down";
+            }
         }
-    
     }
 }
 
