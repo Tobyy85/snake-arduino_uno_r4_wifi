@@ -113,9 +113,7 @@ int SimpleAI::get_score(){
 
 void SimpleAI::get_direction(){
     if (_direction == "up"){
-        if (_food.y < _snake[0].y){
-            _direction = "up";
-        }else{
+        if (_food.y >= _snake[0].y){
             if (_food.x < _snake[0].x){
                 _direction = "left";
             }else if (_food.x > _snake[0].x){
@@ -134,9 +132,7 @@ void SimpleAI::get_direction(){
             }
         }
     }else if (_direction == "down"){
-        if (_food.y > _snake[0].y){
-            _direction = "down";
-        }else{
+        if (_food.y <= _snake[0].y){
             if (_food.x < _snake[0].x){
                 _direction = "left";
             }else if (_food.x > _snake[0].x){
@@ -155,9 +151,7 @@ void SimpleAI::get_direction(){
             }
         }
     }else if (_direction == "left"){
-        if (_food.x < _snake[0].x){
-            _direction = "left";
-        }else{
+        if (_food.x >= _snake[0].x){
             if (_food.y < _snake[0].y){
                 _direction = "up";
             }else if (_food.y > _snake[0].y){
@@ -176,9 +170,7 @@ void SimpleAI::get_direction(){
             }
         }
     }else if (_direction == "right"){
-        if (_food.x > _snake[0].x){
-            _direction = "right";
-        }else{
+        if (_food.x <= _snake[0].x){
             if (_food.y < _snake[0].y){
                 _direction = "up";
             }else if (_food.y > _snake[0].y){
