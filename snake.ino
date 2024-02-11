@@ -18,7 +18,7 @@ JoyStick joy_stick(A0, A1, A2, 509, 507, 5, 5);
 const int screen_width = 12;
 const int screen_height = 8;
 
-bool ai = true;
+bool ai = false;
 bool show_menu = true;
 bool playing = false;
 bool show_end_screen = false;
@@ -32,6 +32,13 @@ float current_millis = 0;
 float last_millis_end_screen = 0;
 float last_millis_food = 0;
 float blink_delay = 400;
+
+
+bool btn_pressed = false;
+int btn_pressed_millis = 0;
+int btn_released_millis = 0;
+int long_press = 750;
+
 
 
 struct coordinates{
@@ -99,14 +106,41 @@ void loop() {
       delay(150); // To prevent the difficulty from changing too fast
     }
 
-    // If the joystick is pressed, the game will start
-    if (joy_stick.get_SW()){
+    // // If the joystick is pressed, the game will start
+    // if (joy_stick.get_SW()){
+    //   multiplier = float(0.02*difficulty) + 1; // The multiplier is used to increase the speed of the snake based on the difficulty
+    //   speed *= multiplier; // Increase the speed of the snake
+    //   playing = true; // The game is now playing
+    //   show_menu = false; // The menu is now hidden
+    // }
+    if (joy_stick.get_SW() && !btn_pressed){
+      btn_pressed = true;
+      btn_pressed_millis = millis();
+    }
+    if (btn_pressed && !joy_stick.get_SW()){
+        btn_released_millis = millis();
+        btn_pressed = false;
+    }
+    if (btn_released_millis - btn_pressed_millis >= long_press){
+      ai = true;
+      playing = false;
+      show_end_screen = false;
+      show_menu = false;
+
+      btn_pressed = false;
+      btn_pressed_millis = 0;
+      btn_released_millis = 0;
+      
+    }else if (btn_released_millis - btn_pressed_millis > 0){
       multiplier = float(0.02*difficulty) + 1; // The multiplier is used to increase the speed of the snake based on the difficulty
       speed *= multiplier; // Increase the speed of the snake
       playing = true; // The game is now playing
       show_menu = false; // The menu is now hidden
-    }
 
+      btn_pressed = false;
+      btn_pressed_millis = 0;
+      btn_released_millis = 0;
+    }
     // Render the difficulty on the screen
     number_on_matrix(difficulty);
   
